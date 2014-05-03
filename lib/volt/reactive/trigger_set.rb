@@ -1,7 +1,7 @@
 # TODO: Move 432 bits to options somewhere
 if RUBY_PLATFORM == 'opal'
   # The opal implementaiton
-  class Bloom
+  class TriggerSet
     def initialize
       # Create a bit vector
       @bit_vector = `new BitVector(432)`
@@ -13,7 +13,7 @@ if RUBY_PLATFORM == 'opal'
     end
 
     # Tests if the bits in this Bloom are set in the passed in bloom.
-    def bloom_in?(bloom)
+    def has_trigger?(bloom)
       return `this.bit_vector.and(bloom.bit_vector).equals(bloom.bit_vector)`
     end
 
@@ -22,18 +22,27 @@ if RUBY_PLATFORM == 'opal'
 
       `other.add(key)`
 
-      return bloom_in?(other)
+      return has_trigger?(other)
+    end
+
+    def &(other)
+      raise "implement &"
     end
   end
 else
   require 'volt/reactive/bit_vector'
 
   # The ruby implementation
-  class Bloom
+  class TriggerSet
     attr_reader :bit_vector
 
-    def initialize
-      @bit_vector = BitVector.new(432)
+    def initialize(start=nil)
+      if start.is_a?(BitVector)
+        @bit_vector = start
+      else
+        @bit_vector = BitVector.new(432)
+        add(start) if start
+      end
     end
 
     def add(key)
@@ -42,16 +51,21 @@ else
       return self
     end
 
-    def bloom_in?(bloom)
-      return @bit_vector.and(bloom.bit_vector).equals(bloom.bit_vector)
+    def has_trigger?(trigger_set)
+      return @bit_vector.and(trigger_set.bit_vector).equals(trigger_set.bit_vector)
     end
 
     def in?(key)
-      return bloom_in?(Bloom.new.add(key))
+      return has_trigger?(TriggerSet.new(key))
     end
 
-    def &(other)
-      return Bloom.new(@bit_vector.and(other.bit_vector))
+    def set_bit_vector(bit_vector)
+      @bit_vector = bit_vector
+      return self
+    end
+
+    def +(other)
+      return TriggerSet.new(@bit_vector.or(other.bit_vector))
     end
   end
 end

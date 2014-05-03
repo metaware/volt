@@ -30,7 +30,7 @@ class Object
     if a.empty? && block_given?
       yield self
     else
-      __send__(*a, &b)
+      __send__(*a, &b) if respond_to?(a.first)
     end
   end
 

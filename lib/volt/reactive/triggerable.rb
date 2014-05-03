@@ -1,4 +1,4 @@
-require 'volt/reactive/bloom'
+require 'volt/reactive/trigger_set'
 
 # The triggerable module can be included in any class to allow it to
 # trigger events.
@@ -11,14 +11,20 @@ module Triggerable
     return nil
   end
 
-  # Returns a Bloom representing the trigger id for a method.
+  # Returns a TriggerSet representing the trigger id for a method.
   def method_trigger_id(method_name)
     scope = method_scope(method_name)
-    return Bloom.new(self.id + '/' + scope.to_s)
+    return TriggerSet.new("#{__id__}/#{scope}")
   end
 
   def object_trigger_id
-    return Bloom.new(self.id)
+    return TriggerSet.new(__id__.to_s)
+  end
+
+  # On a normal object (not reactive), the only thing in its trigger set
+  # is its self.
+  def trigger_set
+    return object_trigger_id
   end
 
   # Schedules a trigger of event (calling the callback)
