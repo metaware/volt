@@ -32,19 +32,17 @@ module Eventable
     end
   end
 
-  def puts(*args)
-    Object
-  end
-
   # Register an event
   def on(event, event_registry=nil, &block)
-    puts "ON!"
+    event = event.to_sym
 
-    # If not provided, use global event registry, or raise an error if one doesn't exist
-    # event_registry ||= $event_registry
-    puts "ER: #{event_registry.inspect}"
     unless event_registry
-      raise "No current event registry"
+      # No provided event registry, setup a global event registry if needed
+      $event_registry = EventRegistry.new unless defined?($event_registry)
+
+      # Use the global event registry
+      event_registry = $event_registry
+      # ::Object.send(:raise, "No current event registry")
     end
 
     # Create a listener for the event
@@ -54,7 +52,7 @@ module Eventable
       @listeners = {}
 
       # First time an event is added for this object
-      event_registry.register(trigger_set, self)
+      event_registry.register(event, trigger_set, self)
     end
 
     @listeners[event] ||= []

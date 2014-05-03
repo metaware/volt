@@ -1,5 +1,6 @@
 require 'volt/reactive/triggerable'
 require 'volt/reactive/eventable'
+require 'volt/reactive/event_registry'
 require 'volt/extra_core/extra_core'
 
 class ReactiveValue < BasicObject
@@ -11,6 +12,11 @@ class ReactiveValue < BasicObject
     @setter = setter
     @called_with = called_with
     @parents = parents
+  end
+
+  # Provide puts for BasicObject
+  def puts(*args)
+    ::Object.send(:puts, *args)
   end
 
   # this value is reactive
@@ -41,10 +47,10 @@ class ReactiveValue < BasicObject
   # When a method is called on a ReactiveValue, instead of evaluating, a new ReactiveValue is
   # returned, which can have its .cur value called to evaluate the method.  This allows to build
   # up computation graphs that can be evaluated and re-evaluated at any time.
-  def method_missing(method_name, *args, &block)
-
-
-  end
+  # def method_missing(method_name, *args, &block)
+  #
+  #
+  # end
 
   def pretty_inspect
     inspect
