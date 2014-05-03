@@ -3,7 +3,7 @@ require 'reactive/bloom'
 # The events module can be included in any class to allow it to
 # register and trigger events.
 
-module Events
+module Triggerable
 
   # The Listener class tracks a bound event.  An instance is returned when
   # an event is registered with .on  The Listener can be removed by calling
