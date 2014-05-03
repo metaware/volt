@@ -1,4 +1,10 @@
+require 'volt/reactive/triggerable'
+require 'volt/reactive/eventable'
+
 class ReactiveValue < BasicObject
+  include Triggerable
+  include Eventable
+
   def initialize(getter, setter=nil, scope=nil, parents=[])
     @getter = getter
     @setter = setter
