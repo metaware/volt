@@ -6,6 +6,9 @@ var hasUint32Array = typeof Uint32Array !== 'undefined';
 function BitVector(size, skipClear) {
   var bucketCount = ((size-1) >> 5) + 1;
   this.bitCount = bucketCount * 32;
+  // TODO: Don't hard code 10 hash count
+  this.hashCount = 10;
+
   if (hasUint32Array) {
     this.buckets = new Uint32Array(new ArrayBuffer(bucketCount * 4));
   } else {
@@ -24,13 +27,13 @@ BitVector.prototype.clear = function() {
   }
 };
 
-// Takes a number of bits to randomly set to 1.  Some
-// bits may be set more than once.
-BitVector.prototype.randomSet = function(numberOfBits) {
-  for (var i=0;i < numberOfBits;i++) {
-    var bitIndex = Math.random() * this.bitCount;
+// Sets the bits as a bloom filter would
+BitVector.prototype.add = function(value) {
+  for (var i=0;i < this.hashCount;i++) {
+    var index = murmurhash3_32_gc(value, i) % this.bitCount;
 
-    this.set(bitIndex);
+    // Set the bit
+    this.set(index);
   }
 };
 
