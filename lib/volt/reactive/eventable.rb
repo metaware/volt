@@ -14,7 +14,7 @@ module Eventable
 
     # Removes the event listener
     def remove
-      @klass.remove_listener(@event)
+      @klass.remove_listener(@event, self)
 
       # Clear
       @klass = nil
@@ -32,14 +32,46 @@ module Eventable
     end
   end
 
+  def puts(*args)
+    Object
+  end
+
   # Register an event
-  def on(event, &block)
+  def on(event, event_registry=nil, &block)
+    puts "ON!"
+
+    # If not provided, use global event registry, or raise an error if one doesn't exist
+    # event_registry ||= $event_registry
+    puts "ER: #{event_registry.inspect}"
+    unless event_registry
+      raise "No current event registry"
+    end
+
+    # Create a listener for the event
     listener = Listener.new(self, event, block)
 
-    @listeners ||= {}
+    unless @listeners
+      @listeners = {}
+
+      # First time an event is added for this object
+      event_registry.register(trigger_set, self)
+    end
+
     @listeners[event] ||= []
     @listeners[event] << listener
 
     return listener
+  end
+
+  # Removes a registered event listener
+  def remove_listener(event, listener)
+    # Delete the listener
+    @listeners[event].delete(listener)
+
+    # Clear the event array if empty
+    @listeners.delete(event) if @listeners[event].size == 0
+
+    # Clear listeners if empty
+    @listeners = nil if @listeners.size == 0
   end
 end

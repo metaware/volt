@@ -38,6 +38,14 @@ class ReactiveValue < BasicObject
     return source_trigger_sets.reduce(:+)
   end
 
+  # When a method is called on a ReactiveValue, instead of evaluating, a new ReactiveValue is
+  # returned, which can have its .cur value called to evaluate the method.  This allows to build
+  # up computation graphs that can be evaluated and re-evaluated at any time.
+  def method_missing(method_name, *args, &block)
+
+
+  end
+
   def pretty_inspect
     inspect
   end

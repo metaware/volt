@@ -2,7 +2,7 @@ class EventRegistry
   def initialize
   end
 
-  def register(listener)
+  def register(trigger_set, object)
 
   end
 end
