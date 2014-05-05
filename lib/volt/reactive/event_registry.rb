@@ -22,11 +22,16 @@ class EventRegistry
 
   # Triggers all queued_triggers
   def flush!
-    @trigger_queue.each do |trigger_id, event, args, block|
+    trigger_queue = @trigger_queue
+
+    # Clear the current trigger queue
+    @trigger_queue = []
+
+    trigger_queue.each do |trigger_id, event, args, block|
       objects = find_objects_for_trigger(trigger_id, event)
 
       objects.each do |object|
-        object.sync_trigger(event, *args, &block)
+        object.sync_trigger!(event, *args, &block)
       end
     end
   end
@@ -45,6 +50,6 @@ class EventRegistry
       end
     end
 
-    return matched
+    return matches
   end
 end

@@ -17,8 +17,14 @@ module Triggerable
     return TriggerSet.new("#{__id__}/#{scope}")
   end
 
+  # Returns a trigger set for a method, which includes the object's trigger set,
+  # and the trigger id for the method.
+  # def method_trigger_set(method_name)
+  #   return method_trigger_id(method_name) + trigger_set
+  # end
+
   def object_trigger_id
-    return TriggerSet.new(__id__.to_s)
+    return @object_trigger_id ||= TriggerSet.new(__id__.to_s)
   end
 
   # On a normal object (not reactive), the only thing in its trigger set
@@ -27,9 +33,10 @@ module Triggerable
     return object_trigger_id
   end
 
-  # Schedules a trigger of event (calling the callback)
+  # Schedules a trigger of an event (calling the callback)
   def trigger!(event, *args, &block)
-
+    event = event.to_sym
+    $event_registry.queue_trigger!(object_trigger_id, event, *args, &block)
   end
 
   # Runs a trigger right now.
