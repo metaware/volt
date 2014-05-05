@@ -51,6 +51,18 @@ describe ReactiveValue do
     $event_registry.flush!
 
     expect(count).to eq(1)
+  end
 
+  it "should trigger up through nested reactive values" do
+    a = ReactiveValue.new(1)
+    b = ReactiveValue.new(a)
+
+    count = 0
+    b.on('changed') { count += 1 }
+    expect(count).to eq(0)
+
+    a.trigger!('changed')
+    $event_registry.flush!
+    expect(count).to eq(1)
   end
 end

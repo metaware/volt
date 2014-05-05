@@ -49,14 +49,14 @@ class ReactiveValue < BasicObject
     true
   end
 
-  def cur
+  def cur(shallow=false)
     if ::Proc === @getter
       result = @getter.call
     else
       result = @getter
     end
 
-    result = result.cur if result.reactive?
+    result = result.cur if !shallow && result.reactive?
 
     return result
   end
@@ -72,16 +72,17 @@ class ReactiveValue < BasicObject
   def trigger_set
     source_trigger_sets = [object_trigger_id]
 
-    source_trigger_sets += @parents.map do |parent|
-      parent.respond_to?(:trigger_set) && parent.trigger_set
-    end
+    # All parents should be reactive, so we can just call trigger_set on them
+    source_trigger_sets += @parents.map(&:trigger_set)
 
     if @called_with && (method_name = @called_with[0])
       source_trigger_sets << @parents[0].method_trigger_id(method_name)
     end
 
     # Try to get the trigger set from the current value.
-    source_trigger_sets << self.cur.try(:trigger_set)
+    # TODO: Should use shallow cur and get trigger set without try?
+    current_obj_shallow = self.cur(true)
+    source_trigger_sets << current_obj_shallow.trigger_set if current_obj_shallow.reactive?
 
     return source_trigger_sets.compact.reduce(:+)
   end
