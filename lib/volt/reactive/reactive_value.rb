@@ -82,7 +82,11 @@ class ReactiveValue < BasicObject
     # Try to get the trigger set from the current value.
     # TODO: Should use shallow cur and get trigger set without try?
     current_obj_shallow = self.cur(true)
-    source_trigger_sets << current_obj_shallow.trigger_set if current_obj_shallow.reactive?
+
+    if current_obj_shallow.respond_to?(:trigger_set)
+      source_trigger_sets << current_obj_shallow.trigger_set
+      puts "CUR: #{current_obj_shallow.inspect}"
+    end
 
     return source_trigger_sets.compact.reduce(:+)
   end

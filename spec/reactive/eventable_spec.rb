@@ -1,18 +1,21 @@
-require 'volt/reactive/events'
+require 'volt/reactive/eventable'
+require 'volt/reactive/triggerable'
 
-class EventTest
-  include Events
+class EventableTest
+  include Eventable
+  include Triggerable
 end
 
-describe Events do
+describe Eventable do
   before do
-    @event_klass = EventTest.new
+    @event_klass = EventableTest.new
+    $event_registry = EventRegistry.new
   end
 
   it "should setup a listener" do
     listener = @event_klass.on('changed') { }
 
-    expect(listener.class).to eq(Events::Listener)
+    expect(listener.class).to eq(Eventable::Listener)
   end
 
   it "should trigger the callback" do
@@ -21,6 +24,7 @@ describe Events do
 
     expect(count).to eq(0)
     @event_klass.trigger!('changed')
+    $event_registry.flush!
     expect(count).to eq(1)
   end
 end

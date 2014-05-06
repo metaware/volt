@@ -1,3 +1,5 @@
+require 'volt/reactive/trigger_set'
+
 # The eventable module can be included on any object that can register
 # events.
 

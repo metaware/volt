@@ -14,6 +14,7 @@ module Triggerable
   # Returns a TriggerSet representing the trigger id for a method.
   def method_trigger_id(method_name)
     scope = method_scope(method_name)
+    puts "TS1: #{self.reactive?} - #{scope.inspect} -- #{method_name.inspect} -- #{__id__}/#{scope} -- #{TriggerSet.new("#{__id__}/#{scope}").inspect}"
     return TriggerSet.new("#{__id__}/#{scope}")
   end
 
@@ -37,6 +38,16 @@ module Triggerable
   def trigger!(event, *args, &block)
     event = event.to_sym
     $event_registry.queue_trigger!(object_trigger_id, event, *args, &block)
+  end
+
+  # Schedules the trigger of an event on a method scope.
+  def trigger_for_scope!(scope, event, *args, &block)
+    event = event.to_sym
+
+    trigger_id = method_trigger_id(scope)
+
+    puts "TRIGGER ID: #{trigger_id.inspect} - #{scope.inspect}"
+    $event_registry.queue_trigger!(trigger_id, event, *args, &block)
   end
 
   # Runs a trigger right now.
