@@ -5,12 +5,15 @@ class EventRegistry
   end
 
   def register(event, trigger_set, object)
+    puts "---", event, trigger_set, object, object.object_id
     @events[event] ||= {}
-    @events[event][object] = trigger_set
+
+    # Use the object's real id as the key
+    @events[event][object.__id__] = [object, trigger_set]
   end
 
   def unregister(event, object)
-    @events[event].delete(object)
+    @events[event].delete(object.__id__)
 
     @events.delete(event) if @events[event].size == 0
   end
@@ -42,7 +45,7 @@ class EventRegistry
     matches = []
 
     if (event = @events[event])
-      event.each_pair do |object, trigger_set|
+      event.each_pair do |object_id, (object, trigger_set)|
         # Check if the registered trigger_set has this trigger_id in it.
         if trigger_set.has_trigger?(trigger_id)
           matches << object

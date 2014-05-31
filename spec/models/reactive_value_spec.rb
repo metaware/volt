@@ -231,6 +231,16 @@ describe ReactiveValue do
     end
   end
 
+  describe "trigger ids" do
+    it "should pass the trigger id's down to dependents" do
+      a = SampleTriggerClass.new
+
+      b = ReactiveValue.new(a)
+      expect(b.trigger_set.has_trigger?(a.trigger_id)).to eq(true)
+
+    end
+  end
+
   describe "triggers from methods" do
 
     it "should trigger on any ReactiveValue's that are wrapping it" do

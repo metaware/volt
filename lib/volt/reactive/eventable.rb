@@ -54,7 +54,7 @@ module Eventable
       @listeners = {}
 
       # First time an event is added for this object
-      event_registry.register(event, trigger_set, self)
+      event_registry.register(event, self.trigger_set, self)
     end
 
     @listeners[event] ||= []

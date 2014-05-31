@@ -66,6 +66,7 @@ module ReactiveTags
 
   def self.included(base)
     base.send(:extend, ClassMethods)
-    base.send(:include, Events)
+    base.send(:include, Eventable)
+    base.send(:include, Triggerable)
   end
 end

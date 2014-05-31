@@ -51,8 +51,8 @@ else
       return self
     end
 
-    def has_trigger?(trigger_set)
-      return @bit_vector.and(trigger_set.bit_vector).equals(trigger_set.bit_vector)
+    def has_trigger?(trigger_id)
+      return @bit_vector.and(trigger_id.bit_vector).equals(trigger_id.bit_vector)
     end
 
     def in?(key)

@@ -8,6 +8,7 @@ require 'volt/models/persistors/model_store'
 require 'volt/models/persistors/params'
 require 'volt/models/persistors/flash'
 require 'volt/models/persistors/local_store'
+
 if RUBY_PLATFORM == 'opal'
   require 'promise.rb'
 else

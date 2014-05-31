@@ -4,6 +4,8 @@ require 'volt/reactive/event_registry'
 require 'volt/extra_core/extra_core'
 require 'volt/reactive/destructive_methods'
 require 'volt/reactive/reactive_tags'
+require 'volt/reactive/array_extensions'
+require 'volt/reactive/string_extensions'
 
 class Object
   def cur
@@ -27,7 +29,7 @@ class ReactiveValue < BasicObject
   # :methods- needs to return a straight up array to work with irb tab completion
   # :eql?   - needed for .uniq to work correctly
   # :to_ary - in some places ruby expects to get an array back from this method
-  SKIP_METHODS = [:object_id, :hash, :methods, :eql?, :respond_to?, :respond_to_missing?, :to_ary, :to_int]#, :instance_of?, :kind_of?, :to_s, :to_str]
+  SKIP_METHODS = [:id, :object_id, :hash, :methods, :eql?, :respond_to?, :respond_to_missing?, :to_ary, :to_int]#, :instance_of?, :kind_of?, :to_s, :to_str]
 
   # Methods provided by ReactiveValue
   PROVIDED_METHODS = [:trigger_set, :on, :remove_listener, :try, :reactive?, :cur, :cur=, :inspect, :object_trigger_id, :trigger!, :sync_trigger!]
@@ -49,6 +51,17 @@ class ReactiveValue < BasicObject
     true
   end
 
+  # Not 100% sure why, but we need to define this directly, it doesn't call
+  # on method missing
+  def ==(val)
+    method_missing(:==, val)
+  end
+
+  # TODO: this is broke in opal
+  def !
+    method_missing(:!)
+  end
+
   def cur(shallow=false)
     if ::Proc === @getter
       result = @getter.call
@@ -63,6 +76,9 @@ class ReactiveValue < BasicObject
 
   def cur=(val)
     @getter = val
+
+    # Trigger a changed event
+    trigger!('changed')
   end
 
   # Returns a bloom with every trigger id in it that this ReactiveValue
@@ -89,6 +105,17 @@ class ReactiveValue < BasicObject
     end
 
     return source_trigger_sets.compact.reduce(:+)
+  end
+
+  # A reactive value's method trigger id (for a method) is just that of its current
+  # value's.
+  def method_trigger_id(name)
+    current_obj = self.cur
+    if current_obj.respond_to?(:method_trigger_id)
+      return current_obj.method_trigger_id(name)
+    else
+      return nil
+    end
   end
 
   # TODO: Will call cur more than once
@@ -123,6 +150,39 @@ class ReactiveValue < BasicObject
 
     return __new_reactive_from_method_call(method_name, *args, &block)
   end
+
+  # With returns a new ReactiveValue whose cur is the result of running the passed
+  # in block.  Any reactive value's that with depends on should be passed in as arguments
+  # and they will be listened for changes also.
+  def with(*other_values, &block)
+    getter = ::Proc.new do
+      cur_val = self.cur
+      block.call(cur_val)
+    end
+
+    # Add the ReactiveValue we're building from
+    parents = [self]
+
+    # Add any reactive arguments as parents
+    other_values.select(&:reactive?).each do |arg|
+      parents << arg
+    end
+
+    return ::ReactiveValue.new(getter, nil, nil, parents)
+  end
+
+
+  # Coerce lets ReactiveValue's work seamlessly with mathmatical operations.
+  # For example ReactiveValue.new(5) + 10 will return ReactiveValue.new(15)
+  def coerce(other)
+    if other.reactive?
+      return [other, self]
+    else
+      wrapped_object = ::ReactiveValue.new(other, [])
+      return [wrapped_object, self]
+    end
+  end
+
 
   def __new_reactive_from_method_call(method_name, *args, &block)
     getter = ::Proc.new do
