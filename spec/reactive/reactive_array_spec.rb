@@ -170,6 +170,33 @@ describe ReactiveArray do
 
       expect(count).to eq(0)
     end
+
+    it "should trigger from a reactive value stored in a cell" do
+      a = ReactiveValue.new(2)
+      b = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+
+      count = 0
+      b[1].on('changed') { count += 1 }
+      expect(count).to eq(0)
+
+      a.trigger!('changed')
+      $event_registry.flush!
+      expect(count).to eq(0)
+
+      b[1] = a
+      $event_registry.flush!
+      expect(count).to eq(1)
+
+      a.trigger!('changed')
+      $event_registry.flush!
+      expect(count).to eq(2)
+
+      a.cur = 10
+      $event_registry.flush!
+      expect(count).to eq(3)
+
+      expect(b[1].cur).to eq(10)
+    end
   end
 
   describe "concat, diff" do
