@@ -9,7 +9,12 @@ class HashWithReactiveTracking
   end
 
   def [](key)
-    @hash[key.__id__][1]
+    key_val = @hash[key.__id__]
+    if key_val
+      return key_val[1]
+    else
+      return nil
+    end
   end
 
   def []=(key, value)

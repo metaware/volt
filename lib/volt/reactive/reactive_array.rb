@@ -39,7 +39,7 @@ class ReactiveArray
     @array[index_val] = value
 
     # Trigger changed
-    trigger_for_index!(index_val, 'changed')
+    trigger_for_index!('changed', index_val)
   end
 
   # When cells are changed, we don't need to trigger a update on all of the
@@ -48,7 +48,9 @@ class ReactiveArray
   def method_scope(method_name, *args)
     if method_name == :[] && args.size == 1 && args[0].is_a?(Fixnum)
       # Array index lookup
-      return [:[], args[0]]
+      return :[], args[0]
+    elsif method_name == :size || method_name == :length
+      return :size
     end
 
     # All other methods
@@ -56,7 +58,7 @@ class ReactiveArray
   end
 
   # Trigger on the updated cell, and all other non-lookup methods.
-  def trigger_for_index!(index, event)
+  def trigger_for_index!(event, index)
     trigger_for_scope!([:[], index], event)
     trigger_for_scope!([nil], event)
   end
@@ -111,7 +113,16 @@ class ReactiveArray
   def <<(value)
     result = (@array << value)
 
-    trigger_for_index!(self.size-1, 'changed')
+    index = self.size-1
+
+    # Trigger on [] cell lookup's
+    trigger_for_index!('changed', index)
+
+    # Trigger that we added
+    trigger!('added', index)
+
+    # Trigger size change (size, length)
+    trigger_for_scope!([:size], 'changed')
 
     return result
   end

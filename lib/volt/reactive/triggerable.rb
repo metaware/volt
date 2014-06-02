@@ -46,7 +46,6 @@ module Triggerable
   def trigger_for_scope!(scope, event, *args, &block)
     event = event.to_sym
 
-    puts "TFS: #{scope.inspect}"
     trigger_id = method_trigger_id(*scope)
 
     $event_registry.queue_trigger!(trigger_id, event, *args, &block)

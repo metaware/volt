@@ -32,7 +32,11 @@ describe ReactiveArray do
 
     $event_registry.flush!
 
-    expect(count).to eq(2)
+    expect(count).to eq(1)
+  end
+
+  it "should trigger size changes when an index is set beyond the current size" do
+
   end
 
   # it "should trigger a change event on any ReactiveValues derived from items in the array" do
@@ -161,28 +165,29 @@ describe ReactiveArray do
   #   expect(count).to eq(1)
   # end
   #
-  # it "should trigger updates when appending" do
-  #   [:size, :length, :count, :last].each do |attribute|
-  #     a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
-  #
-  #     count = 0
-  #     val = a.send(attribute)
-  #     old_value = val.cur
-  #     val.on('changed') { count += 1 }
-  #     expect(count).to eq(0)
-  #
-  #     added_count = 0
-  #     a.on('added') { added_count += 1 }
-  #     expect(added_count).to eq(0)
-  #
-  #     a << 4
-  #
-  #     expect(val.cur).to eq(old_value + 1)
-  #     expect(count).to eq(1)
-  #
-  #     expect(added_count).to eq(1)
-  #   end
-  # end
+  it "should trigger updates when appending" do
+    [:size, :length, :count, :last].each do |attribute|
+      a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+
+      count = 0
+      val = a.send(attribute)
+      old_value = val.cur
+      val.on('changed') { count += 1 }
+      expect(count).to eq(0)
+
+      added_count = 0
+      a.on('added') { added_count += 1 }
+      expect(added_count).to eq(0)
+
+      a << 4
+      $event_registry.flush!
+
+      expect(val.cur).to eq(old_value + 1)
+      expect(count).to eq(1)
+
+      expect(added_count).to eq(1)
+    end
+  end
   #
   # describe "real world type specs" do
   #   it "should let you add in another array" do
