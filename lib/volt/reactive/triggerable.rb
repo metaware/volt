@@ -7,21 +7,23 @@ module Triggerable
 
   # The default method_scope implementation, simply returns nil, meaning all
   # method's scope will be the catch all partial scope.
-  def method_scope(method_name)
+  def method_scope(method_name, *args)
     return nil
   end
 
   # Returns a TriggerSet representing the trigger id for a method.
-  def method_trigger_id(method_name)
-    scope = method_scope(method_name)
-    puts "TS1: #{self.reactive?} - #{scope.inspect} -- #{method_name.inspect} -- #{__id__}/#{scope} -- #{TriggerSet.new("#{__id__}/#{scope}").inspect}"
+  def method_trigger_id(method_name, *args)
+    # TODO: should we serialize this a different way?
+    scope = method_scope(method_name, *args)
+    # puts "TS1: #{self.reactive?} - #{scope.inspect} -- #{method_name.inspect} -- #{__id__}/#{scope} -- #{TriggerSet.new("#{__id__}/#{scope}").inspect}"
+    # puts "TS: #{__id__}/#{scope}"
     return TriggerSet.new("#{__id__}/#{scope}")
   end
 
   # Returns a trigger set for a method, which includes the object's trigger set,
   # and the trigger id for the method.
-  # def method_trigger_set(method_name)
-  #   return method_trigger_id(method_name) + trigger_set
+  # def method_trigger_set(method_name, *args)
+  #   return method_trigger_id(method_name, *args) + trigger_set
   # end
 
   def object_trigger_id
@@ -44,9 +46,9 @@ module Triggerable
   def trigger_for_scope!(scope, event, *args, &block)
     event = event.to_sym
 
-    trigger_id = method_trigger_id(scope)
+    puts "TFS: #{scope.inspect}"
+    trigger_id = method_trigger_id(*scope)
 
-    puts "TRIGGER ID: #{trigger_id.inspect} - #{scope.inspect}"
     $event_registry.queue_trigger!(trigger_id, event, *args, &block)
   end
 

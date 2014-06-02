@@ -52,9 +52,11 @@ module Eventable
 
     unless @listeners
       @listeners = {}
+    end
 
+    unless @listeners[event]
       # First time an event is added for this object
-      event_registry.register(event, self.trigger_set, self)
+      event_registry.register(event, self)
     end
 
     @listeners[event] ||= []

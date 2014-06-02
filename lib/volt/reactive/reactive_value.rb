@@ -83,7 +83,7 @@ class ReactiveValue < BasicObject
 
   # Returns a bloom with every trigger id in it that this ReactiveValue
   # depends on.
-  # parent[0].method_trigger_id(method) + object_trigger_id + parents.each(&:trigger_set) + cur.trigger_set
+  # parent[0].method_trigger_id(method, *args) + object_trigger_id + parents.each(&:trigger_set) + cur.trigger_set
   # TODO: This will do N+1 by calling .cur at each step of the way.
   def trigger_set
     source_trigger_sets = [object_trigger_id]
@@ -91,8 +91,10 @@ class ReactiveValue < BasicObject
     # All parents should be reactive, so we can just call trigger_set on them
     source_trigger_sets += @parents.map(&:trigger_set)
 
+    # Add the trigger id for the method that this ReactiveValue was created from.
+    # This lets us be alerted when the resulting value of the method may change.
     if @called_with && (method_name = @called_with[0])
-      source_trigger_sets << @parents[0].method_trigger_id(method_name)
+      source_trigger_sets << @parents[0].method_trigger_id(method_name, *@called_with[1])
     end
 
     # Try to get the trigger set from the current value.
@@ -101,18 +103,18 @@ class ReactiveValue < BasicObject
 
     if current_obj_shallow.respond_to?(:trigger_set)
       source_trigger_sets << current_obj_shallow.trigger_set
-      puts "CUR: #{current_obj_shallow.inspect}"
     end
 
+    # Combine into one trigger set
     return source_trigger_sets.compact.reduce(:+)
   end
 
   # A reactive value's method trigger id (for a method) is just that of its current
   # value's.
-  def method_trigger_id(name)
+  def method_trigger_id(name, *args)
     current_obj = self.cur
     if current_obj.respond_to?(:method_trigger_id)
-      return current_obj.method_trigger_id(name)
+      return current_obj.method_trigger_id(name, *args)
     else
       return nil
     end

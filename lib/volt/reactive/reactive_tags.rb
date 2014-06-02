@@ -1,4 +1,6 @@
 require 'volt/reactive/destructive_methods'
+require 'volt/reactive/eventable'
+require 'volt/reactive/triggerable'
 
 # ReactiveTags provide an easy way to specify how a class deals with
 # reactive events and method calls.als

@@ -1,19 +1,28 @@
+require 'volt/reactive/hash_with_reactive_tracking'
+
 class EventRegistry
   def initialize
     @events = {}
     @trigger_queue = []
   end
 
-  def register(event, trigger_set, object)
-    puts "---", event, trigger_set, object, object.object_id
-    @events[event] ||= {}
+  def register(event, object)
+    @events[event] ||= HashWithReactiveTracking.new
 
-    # Use the object's real id as the key
-    @events[event][object.__id__] = [object, trigger_set]
+    @events[event][object] = object.trigger_set
+  end
+
+  def update(object)
+    @events.each_pair do |event, hash|
+      if hash[object]
+        # Set to an updated trigger_set
+        hash[object] = object.trigger_set
+      end
+    end
   end
 
   def unregister(event, object)
-    @events[event].delete(object.__id__)
+    @events[event].delete(object)
 
     @events.delete(event) if @events[event].size == 0
   end
@@ -35,6 +44,10 @@ class EventRegistry
 
       objects.each do |object|
         object.sync_trigger!(event, *args, &block)
+
+        # Update the trigger set
+        # TODO: This should be queued, then called with some caching enabled
+        update(object)
       end
     end
   end
@@ -45,7 +58,7 @@ class EventRegistry
     matches = []
 
     if (event = @events[event])
-      event.each_pair do |object_id, (object, trigger_set)|
+      event.each_pair do |object, trigger_set|
         # Check if the registered trigger_set has this trigger_id in it.
         if trigger_set.has_trigger?(trigger_id)
           matches << object
@@ -56,3 +69,5 @@ class EventRegistry
     return matches
   end
 end
+
+

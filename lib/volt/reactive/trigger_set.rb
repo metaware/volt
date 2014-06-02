@@ -67,5 +67,9 @@ else
     def +(other)
       return TriggerSet.new(@bit_vector.or(other.bit_vector))
     end
+
+    def inspect
+      "<TriggerSet #{@bit_vector.hash}>"
+    end
   end
 end

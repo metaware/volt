@@ -1,5 +1,12 @@
 require 'volt/reactive/reactive_value'
 
+class TestYield
+  def call_with_yield
+    yield(1)
+    yield(2)
+  end
+end
+
 class TestTriggerable
   include Triggerable
 end
@@ -15,7 +22,7 @@ class TestMethodScope
     1
   end
 
-  def method_scope(method_name)
+  def method_scope(method_name, *args)
     return method_name
   end
 end
@@ -306,18 +313,6 @@ describe ReactiveValue do
     describe "triggers from methods" do
 
       it "should trigger on any ReactiveValue's that are wrapping it" do
-        a = ReactiveValue.new(SampleTriggerClass.new)
-
-        count = 0
-        a.on('changed') { count += 1 }
-        expect(count).to eq(0)
-
-        a.method_that_triggers
-        $event_registry.flush!
-        expect(count).to eq(1)
-      end
-
-      it "should trigger on any ReactiveValue's that are wrapping it" do
         a = ReactiveValue.new(SampleNonTriggerClass.new)
 
         count = 0
@@ -337,36 +332,50 @@ describe ReactiveValue do
         expect(count).to eq(2)
       end
 
+      it "should trigger on any event" do
+        a = ReactiveValue.new(SampleTriggerClass2.new)
+
+        count = 0
+        a.on('other') { count += 1 }
+        expect(count).to eq(0)
+
+        a.method_that_triggers
+        $event_registry.flush!
+
+        expect(count).to eq(1)
+      end
+
       it "should trigger the correct event" do
-        # a = ReactiveValue.new(SampleNonTriggerClass.new)
-        #
-        # count = 0
-        # other_count = 0
-        # a.on('changed') { count += 1 }
-        # a.on('other') { other_count += 1 }
-        # expect(count).to eq(0)
-        #
-        # a.method_that_triggers
-        # $event_registry.flush!
-        # expect(count).to eq(0)
-        #
-        # a.cur = SampleTriggerClass.new
-        # $event_registry.flush!
-        # expect(count).to eq(1)
-        #
-        # a.method_that_triggers
-        # $event_registry.flush!
-        # expect(count).to eq(2)
-        #
-        # # Note: .cur= triggers changed
-        # a.cur = SampleTriggerClass2.new
-        # $event_registry.flush!
-        # expect(other_count).to eq(0)
-        #
-        # a.method_that_triggers
-        # $event_registry.flush!
-        # expect(count).to eq(3)
-        # expect(other_count).to eq(1)
+        a = ReactiveValue.new(SampleNonTriggerClass.new)
+
+        count = 0
+        other_count = 0
+        a.on('changed') { count += 1 }
+        a.on('other') { other_count += 1 }
+        expect(count).to eq(0)
+        expect(other_count).to eq(0)
+
+        a.method_that_triggers
+        $event_registry.flush!
+        expect(count).to eq(0)
+
+        a.cur = SampleTriggerClass.new
+        $event_registry.flush!
+        expect(count).to eq(1)
+
+        a.method_that_triggers
+        $event_registry.flush!
+        expect(count).to eq(2)
+
+        # Note: .cur= triggers changed
+        a.cur = SampleTriggerClass2.new
+        $event_registry.flush!
+        expect(other_count).to eq(0)
+
+        a.method_that_triggers
+        $event_registry.flush!
+        expect(count).to eq(3)
+        expect(other_count).to eq(1)
       end
 
       it "should trigger through two different paths" do
@@ -434,6 +443,32 @@ describe ReactiveValue do
 
       a.cur = 1
       expect(a.cur).to eq(1)
+    end
+  end
+
+  describe "extraction" do
+    it "should give you back the object without any ReactiveValue's if you call .deep_cur on it." do
+      a = ReactiveValue.new({_names: [ReactiveValue.new('bob'), ReactiveValue.new('jim')]})
+
+      expect(a.deep_cur).to eq({_names: ['bob', 'jim']})
+    end
+  end
+
+  describe "blocks" do
+    before do
+
+    end
+    it "should call blocks through the reactive value, and the returned reactive value should depend on the results of the block" do
+      a = ReactiveValue.new(TestYield.new)
+
+      count = 0
+      a.call_with_yield do |value|
+        count += 1
+        # value.reactive?.should == true
+        # value.even?
+      end.cur
+
+      expect(count).to eq(2)
     end
   end
 
