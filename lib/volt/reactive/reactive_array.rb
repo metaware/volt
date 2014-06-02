@@ -122,27 +122,27 @@ class ReactiveArray
     trigger!('added', index)
 
     # Trigger size change (size, length)
-    trigger_for_scope!([:size], 'changed')
+    trigger_size_change!
 
     return result
   end
 
-  #
-  # def +(array)
-  #   old_size = self.size
-  #
-  #   # TODO: += is funky here, might need to make a .plus! method
-  #   result = ReactiveArray.new(@array.dup + array)
-  #
-  #   old_size.upto(result.size-1) do |index|
-  #     trigger_for_index!('changed', index)
-  #     trigger_on_direct_listeners!('added', old_size + index)
-  #   end
-  #
-  #   trigger_size_change!
-  #
-  #   return result
-  # end
+
+  def +(array)
+    old_size = self.size
+
+    # TODO: += is funky here, might need to make a .plus! method
+    result = ReactiveArray.new(@array.dup + array)
+
+    old_size.upto(result.size-1) do |index|
+      trigger_for_index!('changed', index)
+      trigger!('added', old_size + index)
+    end
+
+    trigger_size_change!
+
+    return result
+  end
   #
   # tag_method(:insert) do
   #   destructive!
@@ -173,21 +173,9 @@ class ReactiveArray
   #
   # end
   #
-  # def trigger_size_change!
-  #   trigger_by_scope!('changed') do |scope|
-  #     # method_name, *args, block = scope
-  #     method_name, args, block = split_scope(scope)
-  #
-  #     result = case method_name && method_name.to_sym
-  #     when :size, :length
-  #       true
-  #     else
-  #       false
-  #     end
-  #
-  #     result
-  #   end
-  # end
+  def trigger_size_change!
+    trigger_for_scope!([:size], 'changed')
+  end
   #
   # # TODO: This is an opal work around.  Currently there is a bug with destructuring
   # # method_name, *args, block = scope
