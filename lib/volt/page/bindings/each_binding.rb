@@ -78,6 +78,7 @@ class EachBinding < BaseBinding
   def update_indexes_after(start_index)
     size = @templates.size
     if size > 0
+      puts @templates.inspect
       start_index.upto(size-1) do |index|
         @templates[index].context.locals[:index].cur = index
       end
@@ -105,8 +106,10 @@ class EachBinding < BaseBinding
     @removed_listener.remove
     @removed_listener = nil
 
-    @templates.each(&:remove)
-    @templates = nil
+    if @templates
+      @templates.compact.each(&:remove)
+      @templates = nil
+    end
 
     super
   end
