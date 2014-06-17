@@ -20,14 +20,12 @@ module Triggerable
     return TriggerSet.new("#{__id__}/#{scope}")
   end
 
-  # Returns a trigger set for a method, which includes the object's trigger set,
-  # and the trigger id for the method.
-  # def method_trigger_set(method_name, *args)
-  #   return method_trigger_id(method_name, *args) + trigger_set
-  # end
-
   def object_trigger_id
     return @object_trigger_id ||= TriggerSet.new(__id__.to_s)
+    # return @object_trigger_id ||= begin
+    #   scope = nil
+    #   TriggerSet.new("#{__id__}/#{scope}")
+    # end
   end
 
   # On a normal object (not reactive), the only thing in its trigger set
