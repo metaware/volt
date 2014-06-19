@@ -120,10 +120,12 @@ class ReactiveValue < BasicObject
     end
   end
 
+
   # TODO: Will call cur more than once
-  def respond_to?(name)
-    PROVIDED_METHODS.include?(name) || cur.respond_to?(name)
+  def respond_to?(name, include_private=false)
+    PROVIDED_METHODS.include?(name) || cur.respond_to?(name, include_private)
   end
+
 
   # def respond_to_missing?(name, include_private=false)
   #   cur.respond_to?(name)

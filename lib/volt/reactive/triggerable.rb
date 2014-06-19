@@ -20,8 +20,10 @@ module Triggerable
     return TriggerSet.new("#{__id__}/#{scope}")
   end
 
+
+  # The id for this reactive value specifically
   def object_trigger_id
-    return @object_trigger_id ||= TriggerSet.new(__id__.to_s)
+    return @object_trigger_id ||= ::TriggerSet.new(__id__.to_s)
     # return @object_trigger_id ||= begin
     #   scope = nil
     #   TriggerSet.new("#{__id__}/#{scope}")

@@ -13,6 +13,10 @@ class ReactiveArray
     @array.send(method_name, *args, &block)
   end
 
+  def respond_to_missing?(method_name, private=false)
+    @array.respond_to?(method_name)
+  end
+
   def ==(*args)
     @array.==(*args)
   end

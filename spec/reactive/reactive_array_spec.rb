@@ -21,6 +21,11 @@ describe ReactiveArray do
     expect(count).to eq(1)
   end
 
+  it "should respond to size" do
+    a = ReactiveArray.new([1,2,3])
+    expect(a.respond_to?(:size)).to eq(true)
+  end
+
   it "should trigger on non-lookup methods when changing a cell" do
     a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
 
