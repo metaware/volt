@@ -113,11 +113,12 @@ class ReactiveArray
   #
   tag_method(:<<) do
     pass_reactive!
+    destructive!
   end
   def <<(value)
     result = (@array << value)
 
-    index = self.size-1
+    index = self.size - 1
 
     # Trigger on [] cell lookup's
     trigger_for_index!('changed', index)
@@ -131,7 +132,10 @@ class ReactiveArray
     return result
   end
 
-
+  tag_method(:+) do
+    pass_reactive!
+    destructive!
+  end
   def +(array)
     old_size = self.size
 
@@ -147,26 +151,27 @@ class ReactiveArray
 
     return result
   end
-  #
-  # tag_method(:insert) do
-  #   destructive!
-  # end
-  # def insert(index, *objects)
-  #   result = @array.insert(index, *objects)
-  #
-  #   # All objects from index to the end have "changed"
-  #   index.upto(result.size-1) do |idx|
-  #     trigger_for_index!('changed', idx)
-  #   end
-  #
-  #   objects.size.times do |count|
-  #     trigger_on_direct_listeners!('added', index+count)
-  #   end
-  #
-  #   trigger_size_change!
-  #
-  #   return result
-  # end
+
+  tag_method(:insert) do
+    destructive!
+    pass_reactive!
+  end
+  def insert(index, *objects)
+    result = @array.insert(index, *objects)
+
+    # All objects from index to the end have "changed"
+    index.upto(result.size-1) do |idx|
+      trigger_for_index!('changed', idx)
+    end
+
+    objects.size.times do |count|
+      trigger!('added', index+count)
+    end
+
+    trigger_size_change!
+
+    return result
+  end
   #
   # def trigger_on_direct_listeners!(event, *args)
   #   trigger_by_scope!(event, *args) do |scope|

@@ -21,6 +21,21 @@ describe ReactiveArray do
     expect(count).to eq(1)
   end
 
+  it "should trigger a change event on any ReactiveValues derived from items in the array" do
+    a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+
+    array_one_item = a[4]
+
+    changed = false
+    array_one_item.on('changed') { changed = true }
+    expect(changed).to eq(false)
+
+    a.insert(3,21,22)
+    $event_registry.flush!
+
+    expect(changed).to eq(true)
+  end
+
   it "should respond to size" do
     a = ReactiveArray.new([1,2,3])
     expect(a.respond_to?(:size)).to eq(true)
@@ -129,6 +144,13 @@ describe ReactiveArray do
     it "should let you add in another array" do
       a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
 
+      # Make sure pos[2] doesn't trigger changed
+      pos_2 = a[2]
+      pos_2_changed = 0
+      pos_2.on('changed') { pos_2_changed += 1 }
+      expect(pos_2).to eq(0)
+
+      # Make sure pos_4 changes
       pos_4 = a[4]
       expect(pos_4.cur).to eq(nil)
       pos_4_changed = 0
@@ -141,10 +163,10 @@ describe ReactiveArray do
       $event_registry.flush!
 
       expect(a.cur).to eq([1,2,3,4,5,6])
-      # TODO: Failing?
-      # expect(pos_4_changed).to eq(1)
-      #
-      # expect(count).to eq(3)
+      expect(pos_2_changed).to eq(0)
+      expect(pos_4_changed).to eq(1)
+      expect(pos_4).to eq(1)
+      expect(count).to eq(3)
     end
 
     it "should trigger changed with a negative index assignment" do
@@ -210,6 +232,7 @@ describe ReactiveArray do
       b = ReactiveValue.new(ReactiveArray.new([1,2,3]))
 
       c = a + b
+      $event_registry.flush!
 
       count_b = 0
       count_c = 0

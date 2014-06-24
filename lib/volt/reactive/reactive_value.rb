@@ -109,10 +109,14 @@ class ReactiveValue < BasicObject
     return source_trigger_sets.compact.reduce(:+)
   end
 
+  def __parents
+    @parents
+  end
+
   # A reactive value's method trigger id (for a method) is just that of its current
   # value's.
   def method_trigger_id(name, *args)
-    current_obj = self.cur
+    current_obj = self.cur(true) # shallow
     if current_obj.respond_to?(:method_trigger_id)
       return current_obj.method_trigger_id(name, *args)
     else
