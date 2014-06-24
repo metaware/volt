@@ -55,6 +55,34 @@ describe ReactiveArray do
     expect(count).to eq(1)
   end
 
+  describe "passing indexes" do
+    it "should pass the index the item was inserted at" do
+      model = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+
+      model.on('added') do |index|
+        expect(index).to eq(2)
+      end
+
+      model.insert(2, 20)
+
+      $event_registry.flush!
+    end
+
+    it "should pass the index the item was inserted at with multiple inserted objects" do
+      model = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+
+      received = []
+      model.on('added') do |index|
+        received << index
+      end
+
+      model.insert(2, 20, 30)
+      $event_registry.flush!
+
+      expect(received).to eq([2, 3])
+    end
+  end
+
   it "should trigger size changes when an index is set beyond the current size" do
 
   end
