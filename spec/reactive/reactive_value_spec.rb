@@ -455,9 +455,6 @@ describe ReactiveValue do
   end
 
   describe "blocks" do
-    before do
-
-    end
     it "should call blocks through the reactive value, and the returned reactive value should depend on the results of the block" do
       a = ReactiveValue.new(TestYield.new)
 
