@@ -1,4 +1,4 @@
-require 'volt/models'
+require 'volt/reactive/reactive_value'
 
 class TestCustomClass
   include ReactiveTags
