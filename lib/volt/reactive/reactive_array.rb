@@ -67,50 +67,47 @@ class ReactiveArray
     trigger_for_scope!([nil], event)
   end
 
-  # tag_method(:delete_at) do
-  #   destructive!
-  # end
-  # # alias :__old_delete_at :delete_at
-  # def delete_at(index)
-  #   index_val = index.cur
-  #
-  #   __clear_element(index)
-  #
-  #   model = @array.delete_at(index_val)
-  #
-  #   trigger_on_direct_listeners!('removed', index_val)
-  #
-  #   # Trigger a changed event for each element in the zone where the
-  #   # lookup would change
-  #   index.upto(self.size+1) do |position|
-  #     trigger_for_index!('changed', position)
-  #   end
-  #
-  #   trigger_size_change!
-  #
-  #   @persistor.removed(model) if @persistor
-  #
-  #   return model
-  # end
-  #
-  #
-  # # Delete is implemented as part of delete_at
-  # tag_method(:delete) do
-  #   destructive!
-  # end
-  # def delete(val)
-  #   self.delete_at(@array.index(val))
-  # end
-  #
-  # # Removes all items in the array model.
-  # tag_method(:clear) do
-  #   destructive!
-  # end
-  # def clear
-  #   @array = []
-  #   trigger!('changed')
-  # end
-  #
+  tag_method(:delete_at) do
+    destructive!
+  end
+  def delete_at(index)
+    index_val = index.cur
+
+    model = @array.delete_at(index_val)
+
+    trigger!('removed', index_val)
+
+    # Trigger a changed event for each element in the zone where the
+    # lookup would change
+    index.upto(self.size+1) do |position|
+      trigger_for_index!('changed', position)
+    end
+
+    trigger_size_change!
+
+    @persistor.removed(model) if @persistor
+
+    return model
+  end
+
+
+  # Delete is implemented as part of delete_at
+  tag_method(:delete) do
+    destructive!
+  end
+  def delete(val)
+    self.delete_at(@array.index(val))
+  end
+
+  # Removes all items in the array model.
+  tag_method(:clear) do
+    destructive!
+  end
+  def clear
+    @array = []
+    trigger!('changed')
+  end
+
   tag_method(:<<) do
     pass_reactive!
     destructive!

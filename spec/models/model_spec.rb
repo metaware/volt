@@ -6,146 +6,175 @@ class TestItem < Model
 end
 
 describe Model do
-
-  it "should allow _ methods to be used to store values without predefining them" do
-    a = Model.new
-    a._stash = 'yes'
-
-    expect(a._stash).to eq('yes')
+  before do
+    $event_registry = EventRegistry.new
   end
 
-  it "should update other values off the same model" do
-    a = ReactiveValue.new(Model.new)
-    count = 0
-    a._name.on('changed') { count += 1 }
-    expect(count).to eq(0)
+  describe "basic hash like storage" do
+    it "should allow _ methods to be used to store values without predefining them" do
+      a = Model.new
+      a._stash = 'yes'
 
-    a._name = 'Bob'
-    expect(count).to eq(1)
+      expect(a._stash).to eq('yes')
+    end
+
+    it "should update other values off the same model" do
+      a = ReactiveValue.new(Model.new)
+      count = 0
+      a._name.on('changed') { count += 1 }
+      expect(count).to eq(0)
+
+      a._name = 'Bob'
+      $event_registry.flush!
+      expect(count).to eq(1)
+    end
+
+    it "should say unregistered attributes are nil" do
+      a = ReactiveValue.new(Model.new)
+      b = a._missing == nil
+      expect(b.cur).to eq(true)
+    end
+
+    it "should negate nil and false correctly" do
+      a = ReactiveValue.new(Model.new)
+      expect((!a._missing).cur).to eq(true)
+
+      a._mis1 = nil
+      a._false1 = false
+
+      expect((!a._mis1).cur).to eq(true)
+      expect((!a._false1).cur).to eq(true)
+    end
+
+    it "should return a nil model for an underscore value that doesn't exist" do
+      a = Model.new
+      expect(a._something.cur.attributes).to eq(nil)
+    end
+
+    it "should let you bind before something is defined" do
+      a = ReactiveValue.new(Model.new)
+
+      b = a._one + 5
+      expect(b.cur.class).to eq(NoMethodError)
+
+      count = 0
+      b.on('changed') { count += 1 }
+      expect(count).to eq(0)
+
+      a._one = 1
+      $event_registry.flush!
+
+      expect(count).to eq(1)
+      expect(b.cur).to eq(6)
+    end
+
+    # it "should let you access an array element before its defined" do
+    #   # TODO: ...
+    # end
+    #
+    it "should trigger changed once when a new value is assigned." do
+      a = ReactiveValue.new(Model.new)
+
+      count = 0
+      a._blue.on('changed') { count += 1 }
+
+      a._blue = 'one'
+      $event_registry.flush!
+      expect(count).to eq(1)
+
+      a._blue = 'two'
+      $event_registry.flush!
+      expect(count).to eq(2)
+    end
+
+    it "should not call changed on other attributes" do
+      a = ReactiveValue.new(Model.new)
+
+      blue_count = 0
+      green_count = 0
+      a._blue.on('changed') { blue_count += 1 }
+      a._green.on('changed') { green_count += 1}
+      expect(blue_count).to eq(0)
+      expect(green_count).to eq(0)
+
+      a._green = 'one'
+      $event_registry.flush!
+      expect(blue_count).to eq(0)
+      expect(green_count).to eq(1)
+
+      a._blue = 'two'
+      $event_registry.flush!
+      expect(blue_count).to eq(1)
+      expect(green_count).to eq(1)
+
+    end
+
+    it "should call change through arguments" do
+      a = ReactiveValue.new(Model.new)
+      a._one = 1
+      a._two = 2
+
+      c = a._one + a._two
+      $event_registry.flush!
+
+      count = 0
+      c.on('changed') { count += 1 }
+      expect(count).to eq(0)
+      expect(c.cur).to eq(3)
+
+      a._two = 5
+      $event_registry.flush!
+      expect(count).to eq(1)
+      expect(c.cur).to eq(6)
+    end
   end
 
-  it "should say unregistered attributes are nil" do
-    a = ReactiveValue.new(Model.new)
-    b = a._missing == nil
-    expect(b.cur).to eq(true)
-  end
+  describe "array storage" do
+    it "should create an array when appending" do
+      a = ReactiveValue.new(Model.new)
 
-  it "should negate nil and false correctly" do
-    a = ReactiveValue.new(Model.new)
-    expect((!a._missing).cur).to eq(true)
+      a._items << 5
+      a._items.cur.class.is_a?(ReactiveArray)
+    end
 
-    a._mis1 = nil
-    a._false1 = false
-
-    expect((!a._mis1).cur).to eq(true)
-    expect((!a._false1).cur).to eq(true)
-  end
-
-  it "should return a nil model for an underscore value that doesn't exist" do
-    a = Model.new
-    expect(a._something.cur.attributes).to eq(nil)
-  end
-
-  it "should let you bind before something is defined" do
-    a = ReactiveValue.new(Model.new)
-
-    b = a._one + 5
-    expect(b.cur.class).to eq(NoMethodError)
-
-    count = 0
-    b.on('changed') { count += 1 }
-    expect(count).to eq(0)
-
-    a._one = 1
-    expect(count).to eq(1)
-    expect(b.cur).to eq(6)
-  end
-
-  it "should let you access an array element before its defined" do
-    # TODO: ...
-  end
-
-  it "should trigger changed once when a new value is assigned." do
-    a = ReactiveValue.new(Model.new)
-
-    count = 0
-    a._blue.on('changed') { count += 1 }
-
-    a._blue = 'one'
-    expect(count).to eq(1)
-    a._blue = 'two'
-    expect(count).to eq(2)
-  end
-
-  it "should not call changed on other attributes" do
-    a = ReactiveValue.new(Model.new)
-
-    blue_count = 0
-    green_count = 0
-    a._blue.on('changed') { blue_count += 1 }
-    a._green.on('changed') { green_count += 1}
-    expect(blue_count).to eq(0)
-    expect(green_count).to eq(0)
-
-    a._green = 'one'
-    expect(blue_count).to eq(0)
-    expect(green_count).to eq(1)
-
-    a._blue = 'two'
-    expect(blue_count).to eq(1)
-    expect(green_count).to eq(1)
-
-  end
-
-  it "should call change through arguments" do
-    a = ReactiveValue.new(Model.new)
-    a._one = 1
-    a._two = 2
-
-    c = a._one + a._two
-
-    count = 0
-    c.on('changed') { count += 1}
-    expect(count).to eq(0)
-
-    a._two = 5
-    expect(count).to eq(1)
-
-    expect(c.cur).to eq(6)
-  end
-
-  it "should store reactive values in arrays and trigger updates when those values change" do
-    a = ReactiveValue.new(Model.new)
-    b = ReactiveValue.new('blue')
-    a._items <<  b
-    b.cur = 'two'
+    it "should store reactive values in arrays and trigger updates when those values change" do
+      a = ReactiveValue.new(Model.new)
+      b = ReactiveValue.new('blue')
+      a._items <<  b
+      b.cur = 'two'
 
 
-    a = ReactiveValue.new(Model.new)
-    b = ReactiveValue.new('blue')
-    a._one = 1
-    a._items << 0
+      a = ReactiveValue.new(Model.new)
+      b = ReactiveValue.new('blue')
+      a._one = 1
+      a._items << 0
+      $event_registry.flush!
 
-    count_1 = 0
-    a._items[1].on('changed') { count_1 += 1 }
-    expect(count_1).to eq(0)
+      count_1 = 0
+      a._items[1].on('changed') { count_1 += 1 }
+      expect(count_1).to eq(0)
 
-    a._items <<  b
-    expect(count_1).to eq(1)
+      a._items <<  b
+      $event_registry.flush!
+      expect(count_1).to eq(1)
 
-    b.cur = 'update'
-    expect(count_1).to eq(2)
+      b.cur = 'update'
+      $event_registry.flush!
+      expect(count_1).to eq(2)
 
-    count_2 = 0
-    a._items[2].on('changed') { count_2 += 1 }
-    expect(count_2).to eq(0)
+      count_2 = 0
+      a._items[2].on('changed') { count_2 += 1 }
+      expect(count_2).to eq(0)
 
-    a._items << a._one
-    expect(count_2).to eq(1)
+      a._items << a._one
+      $event_registry.flush!
+      expect(count_2).to eq(1)
 
-    a._one = 'updated'
-    expect(count_1).to eq(2)
-    expect(count_2).to eq(2)
+      a._one = 'updated'
+      $event_registry.flush!
+      expect(count_1).to eq(2)
+      expect(count_2).to eq(2)
+    end
   end
 
   it "should let you register events before it expands" do
@@ -155,6 +184,7 @@ describe Model do
     expect(count).to eq(0)
 
     a._something = 20
+    $event_registry.flush!
     expect(count).to eq(1)
   end
 
@@ -162,15 +192,18 @@ describe Model do
     model = ReactiveValue.new(Model.new)
 
     concat = model._one + model._two
+    $event_registry.flush!
 
     count = 0
     concat.on('changed') { count += 1 }
     expect(count).to eq(0)
 
     model._one = 'one'
+    $event_registry.flush!
     expect(count).to eq(1)
 
     model._two = 'two'
+    $event_registry.flush!
     expect(count).to eq(2)
 
     expect(concat.cur).to eq('onetwo')
@@ -193,12 +226,14 @@ describe Model do
     model._items << {_name: 'One'}
     model._items << {_name: 'Two'}
     model._items << {_name: 'Three'}
+    $event_registry.flush!
 
     count = 0
     model._items[2].on('changed') { count += 1 }
     expect(count).to eq(0)
 
     model._items.delete_at(1)
+    $event_registry.flush!
     expect(count).to eq(1)
   end
 
@@ -208,6 +243,7 @@ describe Model do
     model._items << {_name: 'One'}
     size = model._items.size
     length = model._items.length
+    $event_registry.flush!
 
     count_size = 0
     count_length = 0
@@ -217,6 +253,8 @@ describe Model do
     expect(count_length).to eq(0)
 
     model._items << {_name: 'Two'}
+    $event_registry.flush!
+
     expect(count_size).to eq(1)
     expect(count_length).to eq(1)
   end
@@ -252,11 +290,13 @@ describe Model do
     expect(count).to eq(0)
 
     a._blue._green = 5
+    $event_registry.flush!
 
     # TODO: Should actually just equal one
     expect(count).to eq(2)
 
     a._blue = 22
+    $event_registry.flush!
     expect(count).to eq(3)
   end
 
@@ -268,45 +308,22 @@ describe Model do
     expect(count).to eq(0)
 
     a._blue = 1
+    $event_registry.flush!
     expect(count).to eq(1)
 
     a.delete(:_blue)
+    $event_registry.flush!
     expect(count).to eq(2)
   end
 
   it "should not trigger a change if the new value is exactly the same" do
-
+    # TODO: finish
   end
 
   it "should let you append nested hashes" do
     a = Model.new
-    # TODO: Fails
-    # a._items << {_name: {_text: 'Name'}}
-  end
-
-  it "should work" do
-    store = ReactiveValue.new(Model.new)
-    # params = ReactiveValue.new(Params.new)
-    index = ReactiveValue.new(0)
-
-    a = store._todo_lists
-    store._current_todo = a#[index]
-
-    added_count = 0
-    changed_count = 0
-    # store._todo_lists.on('added') { added_count += 1 }
-    store._current_todo.on('changed') { changed_count += 1 }
-    # expect(added_count).to eq(0)
-    expect(changed_count).to eq(0)
-
-    a.cur = 1000
-    # store._todo_lists << {_name: 'List 1', _todos: []}
-
-
-    # store._todo_lists[0]._todos << {_name: 'Todo 1'}
-
-    # expect(added_count).to eq(1)
-    # expect(changed_count).to eq(1)
+    a._items << {_name: {_text: 'Name'}}
+    expect(a._items[0]._name._text).to eq('Name')
   end
 
   it "should handle a basic todo list with no setup" do
@@ -315,6 +332,7 @@ describe Model do
 
     a = store._todo_lists
     store._current_todo = store._todo_lists[params._index.or(0).to_i]
+    $event_registry.flush!
 
     added_count = 0
     changed_count = 0
@@ -325,27 +343,30 @@ describe Model do
 
     store._todo_lists << {_name: 'List 1', _todos: []}
     store._todo_lists[0]._todos << {_name: 'Todo 1'}
+    $event_registry.flush!
 
     expect(added_count).to eq(1)
-    # expect(changed_count).to eq(1)
+    expect(changed_count).to eq(1)
   end
 
-  it "should not call added too many times" do
-    a = ReactiveValue.new(Model.new)
-    a._list << 1
-    ac = a._current_list = a._list[0]
-
-    count = 0
-    passed_count = 0
-    a._list.on('added') { count += 1 }
-    a._current_list.on('added') { passed_count += 1 }
-    expect(count).to eq(0)
-    expect(passed_count).to eq(0)
-
-    a._list << 2
-    expect(count).to eq(1)
-    expect(passed_count).to eq(0)
-  end
+  # it "should not call added too many times" do
+  #   a = ReactiveValue.new(Model.new)
+  #   a._list << 1
+  #   ac = a._current_list = a._list[0]
+  #   $event_registry.flush!
+  #
+  #   count = 0
+  #   passed_count = 0
+  #   a._list.on('added') { count += 1 }
+  #   a._current_list.on('added') { passed_count += 1 }
+  #   expect(count).to eq(0)
+  #   expect(passed_count).to eq(0)
+  #
+  #   a._list << 2
+  #   $event_registry.flush!
+  #   expect(count).to eq(1)
+  #   expect(passed_count).to eq(0)
+  # end
 
   it "should propigate to different branches" do
     a = ReactiveValue.new(Model.new)
@@ -355,58 +376,13 @@ describe Model do
     expect(count).to eq(0)
 
     a._new_item._name = 'Testing'
-    # expect(count).to eq(1)
+    $event_registry.flush!
+
+    # TODO: one change is coming from _new_item, and one from _name
+    # maybe we can skip the _name one because its not needed
+    expect(count).to eq(2)
   end
 
-  describe "paths" do
-    it "should store the path" do
-      a = Model.new
-      expect(a._test.path).to eq([:_test])
-      a._test = {_name: 'Yes'}
-      expect(a._test.path).to eq([:_test])
-
-      a._items << {_name: 'Yes'}
-      expect(a._items.path).to eq([:_items])
-      expect(a._items[0].path).to eq([:_items, :[]])
-    end
-
-    it "should store the paths when assigned" do
-      a = Model.new
-
-      a._items = [{_name: 'Cool'}]
-
-      expect(a._items.path).to eq([:_items])
-      expect(a._items[0].path).to eq([:_items, :[]])
-    end
-
-    it "should handle nested paths" do
-      a = Model.new
-
-      a._items << {_name: 'Cool', _lists: [{_name: 'One'}, {_name: 'Two'}]}
-
-      expect(a._items[0]._lists.path).to eq([:_items, :[], :_lists])
-      expect(a._items[0]._lists[1].path).to eq([:_items, :[], :_lists, :[]])
-    end
-
-    it "should trigger added when added" do
-      a = ReactiveValue.new(Model.new)
-      count = 0
-      b = a._items
-
-      b.on('added') { count += 1 }
-      expect(count).to eq(0)
-
-      c = b.cur
-      c << {_name: 'one'}
-
-      # TODO: Without fetching this again, this fails.
-      c = b.cur
-
-      c << {_name: 'two'}
-
-      expect(count).to eq(2)
-    end
-  end
 
   it "should trigger on false assign" do
     a = ReactiveValue.new(Model.new)
@@ -421,10 +397,12 @@ describe Model do
     expect(count1).to eq(0)
 
     a._complete = true
+    $event_registry.flush!
     expect(count1).to eq(1)
     expect(count2).to eq(1)
 
     a._complete = false
+    $event_registry.flush!
     expect(count1).to eq(2)
     expect(count2).to eq(2)
 
@@ -472,6 +450,57 @@ describe Model do
       {:_name => "Test2", :_other => {:_time => "Later"}}
     ]
     expect(all_items).to eq(a)
+  end
+
+  describe "paths" do
+    it "should store the path" do
+      a = Model.new
+      expect(a._test.path).to eq([:_test])
+      a._test = {_name: 'Yes'}
+      expect(a._test.path).to eq([:_test])
+
+      a._items << {_name: 'Yes'}
+      expect(a._items.path).to eq([:_items])
+      expect(a._items[0].path).to eq([:_items, :[]])
+    end
+
+    it "should store the paths when assigned" do
+      a = Model.new
+
+      a._items = [{_name: 'Cool'}]
+
+      expect(a._items.path).to eq([:_items])
+      expect(a._items[0].path).to eq([:_items, :[]])
+    end
+
+    it "should handle nested paths" do
+      a = Model.new
+
+      a._items << {_name: 'Cool', _lists: [{_name: 'One'}, {_name: 'Two'}]}
+
+      expect(a._items[0]._lists.path).to eq([:_items, :[], :_lists])
+      expect(a._items[0]._lists[1].path).to eq([:_items, :[], :_lists, :[]])
+    end
+
+    it "should trigger added when added" do
+      a = ReactiveValue.new(Model.new)
+      count = 0
+      b = a._items
+
+      b.on('added') { count += 1 }
+      expect(count).to eq(0)
+
+      c = b.cur
+      c << {_name: 'one'}
+
+      # TODO: Without fetching this again, this fails.
+      c = b.cur
+
+      c << {_name: 'two'}
+      $event_registry.flush!
+
+      expect(count).to eq(2)
+    end
   end
 
 

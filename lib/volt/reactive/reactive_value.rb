@@ -64,7 +64,13 @@ class ReactiveValue < BasicObject
 
   def cur(shallow=false)
     if ::Proc === @getter
-      result = @getter.call
+      # Call the getter method, capture any errors and return them instead
+      # of throwing them directly
+      begin
+        result = @getter.call
+      rescue => e
+        result = e
+      end
     else
       result = @getter
     end

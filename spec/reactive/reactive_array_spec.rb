@@ -294,4 +294,23 @@ describe ReactiveArray do
       expect(count).to eq(1)
     end
   end
+
+  it "should trigger removed when deleting" do
+    a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+
+    removed = 0
+    index = nil
+    a.on('removed') do |index|
+      removed += 1
+      expect(index).to eq(1)
+    end
+
+    expect(removed).to eq(0)
+
+    a.delete_at(1)
+    $event_registry.flush!
+
+    expect(removed).to eq(1)
+    expect(a.cur).to eq([1,3])
+  end
 end

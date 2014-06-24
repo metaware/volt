@@ -1,7 +1,6 @@
 require 'volt/models/model_wrapper'
 require 'volt/models/array_model'
 require 'volt/models/model_helpers'
-require 'volt/reactive/object_tracking'
 require 'volt/models/model_hash_behaviour'
 require 'volt/models/validations'
 require 'volt/models/model_state'
@@ -20,10 +19,9 @@ end
 class Model
   include ReactiveTags
   include ModelWrapper
-  include ObjectTracking
   include ModelHelpers
   include ModelHashBehaviour
-  include Validations
+  # include Validations
   include ModelState
 
   attr_accessor :attributes
@@ -194,17 +192,19 @@ class Model
     ArrayModel.new(attributes, options)
   end
 
-  def trigger_by_attribute!(event_name, attribute, *passed_args)
-    trigger_by_scope!(event_name, *passed_args) do |scope|
-      method_name, *args, block = scope
-
-      # TODO: Opal bug
-      args ||= []
-
-      # Any methods without _ are not directly related to one attribute, so
-      # they should all trigger
-      !method_name || method_name[0] != '_' || (method_name == attribute.to_sym && args.size == 0)
+  # Models behave like hashes, so hash properties contain their own scope (updating one should
+  # not affect the others)
+  def method_scope(method_name, *args)
+    if method_name[0] == '_'
+      return method_name.to_s.gsub('=', '').to_sym
     end
+
+    return nil
+  end
+
+
+  def trigger_by_attribute!(event_name, attribute, *passed_args)
+    trigger_for_scope!([attribute], event_name, *passed_args)
   end
 
   # Removes an item from the cache
@@ -325,31 +325,9 @@ class Model
 
 
   private
-  def setup_buffer(model)
-    model.attributes = self.attributes
-    model.change_state_to(:loaded)
-  end
-
-    # Clear the previous value and assign a new one
-    def __assign_element(key, value)
-      __clear_element(key)
-      __track_element(key, value)
-    end
-
-    # TODO: Somewhat duplicated from ReactiveArray
-    def __clear_element(key)
-      # Cleanup any tracking on an index
-      # TODO: is this send a security risk?
-      if @reactive_element_listeners && @reactive_element_listeners[key]
-        @reactive_element_listeners[key].remove
-        @reactive_element_listeners.delete(key)
-      end
-    end
-
-    def __track_element(key, value)
-      __setup_tracking(key, value) do |event, key, args|
-        trigger_by_attribute!(event, key, *args)
-      end
+    def setup_buffer(model)
+      model.attributes = self.attributes
+      model.change_state_to(:loaded)
     end
 
     # Takes the persistor if there is one and

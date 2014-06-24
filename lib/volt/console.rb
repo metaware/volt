@@ -22,7 +22,7 @@ class Console
     $LOAD_PATH << 'lib'
     ENV['SERVER'] = 'true'
 
-    require 'volt/reactive/reactive_value'
+    require 'volt/models/model'
     # require 'volt'
     # require 'volt/models'
     # require 'volt/page/page'
