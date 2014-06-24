@@ -1,4 +1,4 @@
-require 'volt/models'
+require 'volt/reactive/reactive_generator'
 
 describe ReactiveGenerator do
   before do
@@ -28,10 +28,13 @@ describe ReactiveGenerator do
     expect(count).to eq(0)
 
     @object[:name].cur = 'jim'
+    $event_registry.flush!
 
     expect(count).to eq(1)
 
     @object[:location][:places].last.cur = 'Starkies'
+    $event_registry.flush!
+
     expect(count).to eq(2)
 
     expect(values.to_h).to eq({
