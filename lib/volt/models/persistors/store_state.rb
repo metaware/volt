@@ -18,7 +18,7 @@ module StoreState
     # Trigger changed on the 'state' method
     unless skip_trigger
       if old_state != @state
-        @model.trigger_for_methods!('changed', :state, :loaded?)
+        @model.trigger!('changed') # :state, :loaded?
       end
     end
 

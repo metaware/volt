@@ -8,6 +8,10 @@ end
 
 
 describe Model do
+  before do
+    $event_registry = EventRegistry.new
+  end
+
   it "should validate the name" do
     expect(TestModel.new.errors).to eq(
       {

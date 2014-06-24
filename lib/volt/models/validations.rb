@@ -27,7 +27,7 @@ module Validations
 
     @include_in_errors.delete(field_name) if @include_in_errors
 
-    trigger_for_methods!('changed', :errors, :marked_errors)
+    trigger!('changed') # :errors, :marked_errors
   end
 
   # Once a field is ready, we can use include_in_errors! to start
@@ -37,7 +37,7 @@ module Validations
     @marked_fields[field_name] = true
 
     if trigger_changed
-      trigger_for_methods!('changed', :errors, :marked_errors)
+      trigger!('changed') # :errors, :marked_errors
     end
   end
 

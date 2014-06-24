@@ -21,7 +21,7 @@ class Model
   include ModelWrapper
   include ModelHelpers
   include ModelHashBehaviour
-  # include Validations
+  include Validations
   include ModelState
 
   attr_accessor :attributes
@@ -294,7 +294,7 @@ class Model
       self.class.validations.keys.each do |key|
         mark_field!(key.to_sym)
       end
-      trigger_for_methods!('changed', :errors, :marked_errors)
+      trigger!('changed') # :errors, :marked_errors
 
       return Promise.new.reject(errors)
     end
