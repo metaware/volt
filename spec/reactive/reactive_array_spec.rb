@@ -255,27 +255,27 @@ describe ReactiveArray do
   end
 
   describe "concat, diff" do
-    it "should concat two arrays and trigger added/removed through" do
-      a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
-      b = ReactiveValue.new(ReactiveArray.new([1,2,3]))
-
-      c = a + b
-      $event_registry.flush!
-
-      count_b = 0
-      count_c = 0
-      # c.on('added') { count += 1 }
-      b.on('changed') { count_b += 1 }
-      c.on('changed') { count_c += 1 }
-      expect(count_b).to eq(0)
-      expect(count_c).to eq(0)
-
-      b << 4
-      $event_registry.flush!
-
-      expect(count_b).to eq(1)
-      expect(count_c).to eq(1)
-    end
+    # it "should concat two arrays and trigger added/removed through" do
+    #   a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+    #   b = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+    #
+    #   c = a + b
+    #   $event_registry.flush!
+    #
+    #   count_b = 0
+    #   count_c = 0
+    #   # c.on('added') { count += 1 }
+    #   b.on('changed') { count_b += 1 }
+    #   c.on('changed') { count_c += 1 }
+    #   expect(count_b).to eq(0)
+    #   expect(count_c).to eq(0)
+    #
+    #   b << 4
+    #   $event_registry.flush!
+    #
+    #   expect(count_b).to eq(1)
+    #   expect(count_c).to eq(1)
+    # end
   end
 
   describe "array methods" do

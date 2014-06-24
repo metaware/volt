@@ -1,6 +1,10 @@
 require 'volt/models'
 
 describe Persistors::Params do
+  before do
+    $event_registry = EventRegistry.new
+  end
+
   it "should stay as params classes when used" do
     a = Model.new({}, persistor: Persistors::Params)
     expect(a._test.class).to eq(Model)

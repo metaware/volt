@@ -6,6 +6,10 @@ require 'volt/page/template_renderer'
 
 
 describe ContentBinding do
+  before do
+    $event_registry = EventRegistry.new
+  end
+
   it "should render the content in a content binding" do
     dom = AttributeTarget.new(0)
     context = {:name => 'jimmy'}

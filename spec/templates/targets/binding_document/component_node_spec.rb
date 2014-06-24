@@ -1,6 +1,12 @@
 require 'volt/page/targets/binding_document/component_node'
+require 'volt/reactive/event_registry'
+require 'volt/reactive/reactive_value'
 
 describe ComponentNode do
+  before do
+    $event_registry = EventRegistry.new
+  end
+
   before do
     html = <<-END
     <!-- $0 -->Before  <!-- $1 -->Inside<!-- $/1 -->  After<!-- $/0 -->

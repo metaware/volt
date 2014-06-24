@@ -7,12 +7,6 @@ class TestReactiveAccessors
 end
 
 describe ReactiveAccessors do
-  it "should return the same reactive value after each read" do
-    inst = TestReactiveAccessors.new
-
-    expect(inst._name.reactive_manager.object_id).to eq(inst._name.reactive_manager.object_id)
-  end
-
   it "should assign a reactive value" do
     inst = TestReactiveAccessors.new
 
@@ -30,10 +24,10 @@ describe ReactiveAccessors do
     inst = TestReactiveAccessors.new
 
     inst._name = 'Ryan'
-    rv1_id = inst._name.reactive_manager.object_id
+    rv1_id = inst._name.__id__
 
     inst._name = 'Jim'
-    rv2_id = inst._name.reactive_manager.object_id
+    rv2_id = inst._name.__id__
 
     expect(rv1_id).to eq(rv2_id)
   end
