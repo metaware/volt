@@ -30,6 +30,17 @@ class EventRegistry
   # Queues a trigger for later
   def queue_trigger!(trigger_id, event, *args, &block)
     @trigger_queue << [trigger_id, event, args, block]
+
+    if Volt.client?
+      # On the client, we just flush after a timeout
+      if @flush_timer
+        `clearTimeout(this.flush_timer);`
+      end
+
+      @flush_timer = `setTimeout(function() {`
+        flush!
+      `}, 0);`
+    end
   end
 
   # Triggers all queued_triggers
@@ -50,6 +61,9 @@ class EventRegistry
         update(object)
       end
     end
+
+    # Call again if more events have been queued
+    flush! if @trigger_queue.size > 0
   end
 
   # Goes through the TriggerSet's for an event and returns each the associated object

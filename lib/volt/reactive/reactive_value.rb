@@ -95,7 +95,7 @@ class ReactiveValue < BasicObject
     source_trigger_sets = [object_trigger_id]
 
     # All parents should be reactive, so we can just call trigger_set on them
-    source_trigger_sets += @parents.map(&:trigger_set)
+    source_trigger_sets += @parents.map {|p| p.trigger_set }
 
     # Add the trigger id for the method that this ReactiveValue was created from.
     # This lets us be alerted when the resulting value of the method may change.

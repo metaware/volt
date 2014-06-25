@@ -28,6 +28,7 @@ end
 class EventBinding < BaseBinding
   attr_accessor :context, :binding_name
   def initialize(page, target, context, binding_name, event_name, call_proc)
+    puts "NEW EB"
     super(page, target, context, binding_name)
     @event_name = event_name
 

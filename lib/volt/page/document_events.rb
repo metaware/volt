@@ -26,6 +26,7 @@ class DocumentEvents
   end
 
   def handle(event_name, event, target)
+    puts "EVENT"
     element = Element.find(target)
 
     loop do

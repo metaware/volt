@@ -1,7 +1,7 @@
 # Acts the same as the Channel class on the front-end, but calls
 # directly instead of using sockjs.
 
-require 'volt/reactive/events'
+require 'volt/reactive/eventable'
 require 'volt/tasks/dispatcher'
 
 # Behaves the same as the Channel class, only the Channel class uses

@@ -36,6 +36,7 @@ class Page
   attr_reader :url, :params, :page, :templates, :routes, :draw_cycle, :events
 
   def initialize
+    $event_registry = EventRegistry.new
     @model_classes = {}
 
     # Run the code to setup the page
@@ -65,6 +66,7 @@ class Page
 
     # Initialize tasks so we can get the reload message
     self.tasks if Volt.env.development?
+
   end
 
   def flash
@@ -97,6 +99,8 @@ class Page
 
       # Clear the flash
       flash.clear
+
+      $event_registry.flush!
 
       # return false to stop the event propigation
       return false

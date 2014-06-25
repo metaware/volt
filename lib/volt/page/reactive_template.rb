@@ -1,5 +1,6 @@
 class ReactiveTemplate
-  include Events
+  include Eventable
+  include Triggerable
 
   def initialize(page, context, template_path)
     @template_path = template_path

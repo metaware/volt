@@ -5,6 +5,8 @@ class AttributeBinding < BaseBinding
   def initialize(page, target, context, binding_name, attribute_name, getter)
     super(page, target, context, binding_name)
 
+    puts "NEW AB: #{binding_name}"
+
     @attribute_name = attribute_name
     @getter = getter
 
@@ -12,7 +14,6 @@ class AttributeBinding < BaseBinding
   end
 
   def setup
-
     # Find the source for the content binding
     @value = value_from_getter(@getter)
 

@@ -2,14 +2,24 @@
 if RUBY_PLATFORM == 'opal'
   # The opal implementaiton
   class TriggerSet
-    def initialize
+    def initialize(key)
       # Create a bit vector
       @bit_vector = `new BitVector(432)`
+
+      `if (key) {`
+        `if (key instanceof BitVector) {`
+          `this.bit_vector = key;`
+        `} else {`
+          add(key)
+        `}`
+      `}`
     end
 
     def add(key)
       # Set the bits on the vector
-      `this.bit_vector.setBitsForValue(key);`
+      `this.bit_vector.add(key);`
+
+      return self
     end
 
     # Tests if the bits in this Bloom are set in the passed in bloom.
@@ -25,8 +35,8 @@ if RUBY_PLATFORM == 'opal'
       return has_trigger?(other)
     end
 
-    def &(other)
-      raise "implement &"
+    def +(other)
+      return TriggerSet.new(`this.bit_vector.or(other.bit_vector)`)
     end
   end
 else
