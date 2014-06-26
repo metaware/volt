@@ -282,6 +282,28 @@ describe Model do
     expect(model._item._lists.cur.class).to eq(ArrayModel)
   end
 
+  it "should trigger added once when creating an array" do
+    model = ReactiveValue.new(Model.new)
+
+    added = 0
+    changed = 0
+    removed = 0
+
+    model._items.on('added') { added += 1 }
+    model._items.on('changed') { changed += 1 }
+    model._items.on('removed') { removed += 1 }
+    expect(added).to eq(0)
+    expect(changed).to eq(0)
+    expect(removed).to eq(0)
+
+    model._items << {_name: 'Ryan'}
+    $event_registry.flush!
+
+    expect(added).to eq(1)
+    expect(changed).to eq(0)
+    expect(removed).to eq(0)
+  end
+
   it "should call changed when a the reference to a submodel is assigned to another value" do
     a = ReactiveValue.new(Model.new)
 
@@ -330,7 +352,6 @@ describe Model do
     store = ReactiveValue.new(Model.new)
     params = ReactiveValue.new(Model.new({}, persistor: Persistors::Params))
 
-    a = store._todo_lists
     store._current_todo = store._todo_lists[params._index.or(0).to_i]
     $event_registry.flush!
 

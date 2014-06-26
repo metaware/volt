@@ -12,6 +12,7 @@ class Pry
       show_result(result)
     end
 
+    # Automatically flush after each line
     $event_registry.flush!
   end
 end

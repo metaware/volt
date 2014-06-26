@@ -227,6 +227,7 @@ class Model
 
   tag_method(:<<) do
     pass_reactive!
+    destructive!
   end
   # Initialize an empty array and append to it
   def <<(value)
@@ -249,10 +250,7 @@ class Model
     # Add the new item
     result << value
 
-    trigger!('added', nil, 0)
-    trigger!('changed')
-
-    return nil
+    return value
   end
 
   def inspect

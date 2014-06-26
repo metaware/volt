@@ -33,13 +33,12 @@ class EventRegistry
 
     if Volt.client?
       # On the client, we just flush after a timeout
-      if @flush_timer
-        `clearTimeout(this.flush_timer);`
+      unless @flush_timer
+        @flush_timer = `setTimeout(function() {`
+          flush!
+          @flush_timer = nil
+        `}, 0);`
       end
-
-      @flush_timer = `setTimeout(function() {`
-        flush!
-      `}, 0);`
     end
   end
 

@@ -81,10 +81,16 @@ class ReactiveValue < BasicObject
   end
 
   def cur=(val)
-    @getter = val
+    if @setter
+      @setter.call(val)
+    elsif @called_with && @called_with[1].size == 0
+      @parents[0].send(:"#{@called_with[0]}=", val)
+    else
+      @getter = val
+      @setter = nil
 
-    # Trigger a changed event
-    trigger!('changed')
+      trigger!('changed')
+    end
   end
 
   # Returns a bloom with every trigger id in it that this ReactiveValue
@@ -92,7 +98,9 @@ class ReactiveValue < BasicObject
   # parent[0].method_trigger_id(method, *args) + object_trigger_id + parents.each(&:trigger_set) + cur.trigger_set
   # TODO: This will do N+1 by calling .cur at each step of the way.
   def trigger_set
-    source_trigger_sets = [object_trigger_id]
+    source_trigger_sets = []
+
+    source_trigger_sets << object_trigger_id if self.is_a?(::ReactiveValue)
 
     # All parents should be reactive, so we can just call trigger_set on them
     source_trigger_sets += @parents.map {|p| p.trigger_set }

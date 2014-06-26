@@ -16,9 +16,9 @@ class EachBinding < BaseBinding
     # update
     reload
 
-    @added_listener = @value.on('added') { |_, position, item| item_added(position) }
+    @added_listener = @value.on('added') { |position| reload }#item_added(position) }
     @changed_listener = @value.on('changed') { reload }
-    @removed_listener = @value.on('removed') { |_, position| item_removed(position) }
+    @removed_listener = @value.on('removed') { |position| item_removed(position) }
   end
 
   # When a changed event happens, we update to the new size.
@@ -50,6 +50,7 @@ class EachBinding < BaseBinding
   end
 
   def item_added(position)
+    puts "ADDED AT: #{position}"
     # ObjectTracker.enable_cache
     binding_name = @@binding_number
     @@binding_number += 1

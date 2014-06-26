@@ -29,6 +29,7 @@ require 'volt'
 require 'volt/benchmark/benchmark'
 require 'volt/page/draw_cycle'
 require 'volt/page/tasks'
+require 'volt/page/page/window'
 
 
 
@@ -99,8 +100,6 @@ class Page
 
       # Clear the flash
       flash.clear
-
-      $event_registry.flush!
 
       # return false to stop the event propigation
       return false

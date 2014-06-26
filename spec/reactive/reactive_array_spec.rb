@@ -59,13 +59,18 @@ describe ReactiveArray do
     it "should pass the index the item was inserted at" do
       model = ReactiveValue.new(ReactiveArray.new([1,2,3]))
 
+      count = 0
       model.on('added') do |index|
+        count += 1
         expect(index).to eq(2)
       end
 
-      model.insert(2, 20)
+      expect(count).to eq(0)
 
+      model.insert(2, 20)
       $event_registry.flush!
+
+      expect(count).to eq(1)
     end
 
     it "should pass the index the item was inserted at with multiple inserted objects" do
@@ -163,7 +168,6 @@ describe ReactiveArray do
 
       expect(val.cur).to eq(old_value + 1)
       expect(count).to eq(1)
-
       expect(added_count).to eq(1)
     end
   end

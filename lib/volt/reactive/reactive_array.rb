@@ -62,9 +62,9 @@ class ReactiveArray
   end
 
   # Trigger on the updated cell, and all other non-lookup methods.
-  def trigger_for_index!(event, index)
+  def trigger_for_index!(event, index, skip_all_update=false)
     trigger_for_scope!([:[], index], event)
-    trigger_for_scope!([nil], event)
+    trigger_for_scope!([nil], event) unless skip_all_update
   end
 
   tag_method(:delete_at) do
