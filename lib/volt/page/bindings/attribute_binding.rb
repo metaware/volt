@@ -8,9 +8,7 @@ class AttributeBinding < BaseBinding
     @attribute_name = attribute_name
     @getter = getter
 
-    puts "BIND #{attribute_name} - #{target}"
     setup
-    puts "SETUP"
   end
 
   def setup
@@ -88,7 +86,6 @@ class AttributeBinding < BaseBinding
   end
 
   def remove
-    puts "REMOVE: #{@attribute_name}"
     # Unbind events, leave the element there since attribute bindings
     # aren't responsible for it being there.
     case @attribute_name

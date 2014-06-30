@@ -4,7 +4,6 @@ require 'volt/page/bindings/template_binding/grouped_controllers'
 
 class TemplateBinding < BaseBinding
   def initialize(page, target, context, binding_name, binding_in_path, getter)
-    puts "NEW TEMPLATE: #{binding_name} - #{target.inspect}"
     super(page, target, context, binding_name)
 
     # Binding in path is the path for the template this binding is in
@@ -32,8 +31,8 @@ class TemplateBinding < BaseBinding
     # Run the initial render
     update
 
-    @path_changed_listener = @path.on('changed') { puts "Path Changed: #{@path.cur}" ; queue_update } if @path.reactive?
-    @section_changed_listener = @section.on('changed') { puts "Section Changed: #{@path.cur}" ; queue_update } if @section && @section.reactive?
+    @path_changed_listener = @path.on('changed') { queue_update } if @path.reactive?
+    @section_changed_listener = @section.on('changed') { queue_update } if @section && @section.reactive?
   end
 
   def setup_path(binding_in_path)

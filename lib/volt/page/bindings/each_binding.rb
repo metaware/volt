@@ -50,7 +50,6 @@ class EachBinding < BaseBinding
   end
 
   def item_added(position)
-    puts "ADDED AT: #{position}"
     # ObjectTracker.enable_cache
     binding_name = @@binding_number
     @@binding_number += 1
@@ -79,7 +78,6 @@ class EachBinding < BaseBinding
   def update_indexes_after(start_index)
     size = @templates.size
     if size > 0
-      puts @templates.inspect
       start_index.upto(size-1) do |index|
         @templates[index].context.locals[:index].cur = index
       end
