@@ -81,6 +81,7 @@ class ReactiveValue < BasicObject
   end
 
   def cur=(val)
+    puts "CUR: #{val}"
     if @setter
       @setter.call(val)
     elsif @called_with && @called_with[1].size == 0

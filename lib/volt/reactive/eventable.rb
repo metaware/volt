@@ -71,7 +71,14 @@ module Eventable
     @listeners[event].delete(listener)
 
     # Clear the event array if empty
-    @listeners.delete(event) if @listeners[event].size == 0
+    if @listeners[event].size == 0
+      # Remove from event registry
+      event_registry = $event_registry
+
+      event_registry.unregister(event, self)
+
+      @listeners.delete(event)
+    end
 
     # Clear listeners if empty
     @listeners = nil if @listeners.size == 0

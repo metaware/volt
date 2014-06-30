@@ -53,6 +53,7 @@ class EventRegistry
       objects = find_objects_for_trigger(trigger_id, event)
 
       objects.each do |object|
+        puts "TRIG: #{event} on #{object.__id__} -- #{object.inspect}"
         object.sync_trigger!(event, *args, &block)
 
         # Update the trigger set

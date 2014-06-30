@@ -367,7 +367,7 @@ describe Model do
     $event_registry.flush!
 
     expect(added_count).to eq(1)
-    expect(changed_count).to eq(1)
+    expect(changed_count).to eq(0)
   end
 
   # it "should not call added too many times" do

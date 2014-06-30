@@ -114,7 +114,6 @@ class Model
     attribute_name = method_name[0..-2].to_sym
 
     value = args[0]
-    __assign_element(attribute_name, value)
 
     attributes[attribute_name] = wrap_value(value, [attribute_name])
     trigger_by_attribute!('changed', attribute_name)
@@ -128,6 +127,7 @@ class Model
   # 2) reading directly from attributes
   # 3) trying to read a key that doesn't exist.
   def read_attribute(method_name)
+    # puts "READ: #{method_name}"
     # Reading an attribute, we may get back a nil model.
     method_name = method_name.to_sym
 
@@ -162,7 +162,11 @@ class Model
     if @persistor && @persistor.respond_to?(:read_new_model)
       @persistor.read_new_model(method_name)
     else
-      return new_model(nil, @options.merge(parent: self, path: path + [method_name]))
+      if method_name.plural?
+        return new_array_model([], @options.merge(parent: self, path: path + [method_name]))
+      else
+        return new_model(nil, @options.merge(parent: self, path: path + [method_name]))
+      end
     end
   end
 

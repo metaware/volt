@@ -16,7 +16,7 @@ class URL
   tag_method(:parse) do
     destructive!
   end
-  def parse(url)
+  def parse(url, skip_trigger=false)
     if url[0] == '#'
       # url only updates fragment
       @fragment = url[1..-1]
@@ -50,7 +50,7 @@ class URL
 
     scroll
 
-    trigger!('changed') # :path
+    trigger!('changed') unless skip_trigger # :path
 
     return true
   end

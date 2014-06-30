@@ -30,7 +30,8 @@ class UrlTracker
   end
 
   def url_updated(first_call=false)
-    @page.url.parse(`document.location.href`)
+    puts "URL UPDATED"
+    @page.url.parse(`document.location.href`, first_call)
     @page.url.update! unless first_call
   end
 end

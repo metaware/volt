@@ -38,6 +38,7 @@ module Triggerable
 
   # Schedules a trigger of an event (calling the callback)
   def trigger!(event, *args, &block)
+    puts "TRIGGER: #{event} - #{self.inspect}"
     event = event.to_sym
     $event_registry.queue_trigger!(object_trigger_id, event, *args, &block)
   end
