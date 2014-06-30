@@ -33,6 +33,7 @@ class SocketConnectionHandler < SockJS::Session
   end
 
   def process_message(message)
+    puts "PROCESS: #{message.inspect}"
     # self.class.message_all(message)
     # Messages are json and wrapped in an array
     message = JSON.parse(message).first

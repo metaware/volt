@@ -3,6 +3,7 @@
 # to get them to display the new data.
 class QueryListener
   def initialize(query_listener_pool, tasks, collection, query)
+    puts "NEW QUERY TASK: #{collection.inspect} - #{query.inspect}"
     @query_listener_pool = query_listener_pool
     @tasks = tasks
     @stores = []

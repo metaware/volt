@@ -47,7 +47,7 @@ class Model
     @parent = options[:parent]
     @path = options[:path] || []
     @class_paths = options[:class_paths]
-    @persistor = setup_persistor(options[:persistor])
+    setup_persistor(options[:persistor])
   end
 
   # Assign multiple attributes as a hash, directly.
@@ -332,7 +332,7 @@ class Model
       model.change_state_to(:loaded)
     end
 
-    # Takes the persistor if there is one and
+    # Takes the persistor if there is one and create it
     def setup_persistor(persistor)
       if persistor
         @persistor = persistor.new(self)

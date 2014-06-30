@@ -1,5 +1,6 @@
 require 'volt/reactive/triggerable'
 require 'volt/reactive/eventable'
+require 'volt/reactive/reactive_generator'
 require 'volt/reactive/event_registry'
 require 'volt/extra_core/extra_core'
 require 'volt/reactive/destructive_methods'
@@ -203,6 +204,19 @@ class ReactiveValue < BasicObject
       wrapped_object = ::ReactiveValue.new(other, [])
       return [wrapped_object, self]
     end
+  end
+
+
+  # Return a new reactive value that listens for changes on any
+  # ReactiveValues inside of its children (hash values, array items, etc..)
+  # This is useful if someone is passing in a set of options, but the main
+  # hash isn't a ReactiveValue, but you want to listen for changes inside
+  # of the hash.
+  #
+  # skip_if_no_reactives lets you get back a non-reactive value in the event
+  #    that there are no child reactive values.
+  def self.from_hash(hash, skip_if_no_reactives=false)
+    ::ReactiveGenerator.from_hash(hash)
   end
 
 
