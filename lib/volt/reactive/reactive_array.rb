@@ -32,8 +32,9 @@ class ReactiveArray
   tag_method(:[]=) do
     pass_reactive!
   end
-  def []=(index, value)
+  def []=(index, value, skip_trigger=false)
     index_val = index.cur
+    start_size = @array.size
 
     if index_val < 0
       # Handle a negative index, so we can trigger on the right index
@@ -43,7 +44,10 @@ class ReactiveArray
     @array[index_val] = value
 
     # Trigger changed
-    trigger_for_index!('changed', index_val)
+    unless skip_trigger
+      trigger_for_index!('changed', index_val)
+      trigger_size_change! if index_val >= start_size
+    end
   end
 
   # When cells are changed, we don't need to trigger a update on all of the
@@ -63,6 +67,7 @@ class ReactiveArray
 
   # Trigger on the updated cell, and all other non-lookup methods.
   def trigger_for_index!(event, index, skip_all_update=false)
+    puts "TI: #{index}"
     trigger_for_scope!([:[], index], event)
     trigger_for_scope!([nil], event) unless skip_all_update
   end
@@ -237,9 +242,9 @@ class ReactiveArray
   #   end
   # end
   #
-  # def inspect
-  #   "#<#{self.class.to_s}:#{object_id} #{@array.inspect}>"
-  # end
+  def inspect
+    "#<#{self.class.to_s}:#{object_id} #{@array.inspect}>"
+  end
   #
   # # tag_method(:count) do
   # #   destructive!

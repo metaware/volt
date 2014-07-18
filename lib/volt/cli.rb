@@ -16,6 +16,7 @@ class CLI < Thor
 
   desc "console", "run the console on the project in the current directory"
   def console
+    require 'volt'
     require 'volt/console'
     Console.start
   end

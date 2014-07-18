@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'volt/reactive/reactive_array'
 
 describe ReactiveArray do
@@ -50,6 +51,19 @@ describe ReactiveArray do
     expect(count).to eq(0)
     a[0] = 5
 
+    $event_registry.flush!
+
+    expect(count).to eq(1)
+  end
+
+  it "should trigger a changed event on size when an item is assigned at an index higher than before" do
+    a = ReactiveValue.new(ReactiveArray.new([1,2,3]))
+
+    count = 0
+    a.size.on('changed') { count += 1 }
+    expect(count).to eq(0)
+
+    a[3] = 20
     $event_registry.flush!
 
     expect(count).to eq(1)

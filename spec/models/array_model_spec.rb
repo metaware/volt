@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'volt/models'
 
 describe ArrayModel do
@@ -5,6 +6,64 @@ describe ArrayModel do
     $event_registry = EventRegistry.new
   end
 
+  describe "array storage" do
+    it "should create an array when appending" do
+      a = ReactiveValue.new(Model.new)
+
+      a._items << 5
+      a._items.cur.class.is_a?(ReactiveArray)
+    end
+
+    it "should store reactive values in arrays and trigger updates when those values change" do
+      a = ReactiveValue.new(Model.new)
+      b = ReactiveValue.new('blue')
+      a._one = 1
+      a._items << 0
+      $event_registry.flush!
+
+      count_1 = 0
+      a._items[1].on('changed') { count_1 += 1 }
+      expect(count_1).to eq(0)
+
+      a._items << b
+      $event_registry.flush!
+      expect(count_1).to eq(1)
+
+      b.cur = 'update'
+      $event_registry.flush!
+      expect(count_1).to eq(2)
+
+      count_2 = 0
+      a._items[2].on('changed') { count_2 += 1 }
+      expect(count_2).to eq(0)
+
+      a._items << a._one
+      $event_registry.flush!
+      expect(count_2).to eq(1)
+
+      a._one = 'updated'
+      $event_registry.flush!
+      expect(count_1).to eq(2)
+      expect(count_2).to eq(2)
+    end
+  end
+
+  describe "event triggering" do
+    it "should trigger a changed event when an item is added into an ArrayModel" do
+      a = ReactiveValue.new(Model.new)
+
+      count = 0
+      a._items[0].on('changed') { count += 1 }
+      $event_registry.flush!
+
+      expect(count).to eq(1)
+
+      a._items << {_name: 'ok'}
+      $event_registry.flush!
+
+      expect(count).to eq(2)
+    end
+  end
 
   # it "should trigger a change event on any ReactiveValues derived from items in the array" do
   #   model = ReactiveValue.new(Model.new)

@@ -23,7 +23,7 @@ class Console
     $LOAD_PATH << 'lib'
     ENV['SERVER'] = 'true'
 
-    require 'volt/models/model'
+    require 'volt/models'
     # require 'volt'
     # require 'volt/models'
     # require 'volt/page/page'
